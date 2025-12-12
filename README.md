@@ -118,7 +118,7 @@ The available models are fetched dynamically from the Cloudflare Workers AI API:
 3. Content is sent to the selected AI model with the user's message
 4. Response is returned to the user
 
-### Rate Limiting (Free Tier)
+### Rate Limiting
 Without an API key:
 - 5 requests per IP per day
 
