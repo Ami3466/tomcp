@@ -22,8 +22,7 @@ AI assistants hallucinate API details when they lack documentation. MCP Resource
 | Tokens | High | Low |
 | Persistence | Per-request | Always available |
 | Hallucination | Higher | Lower |
-
-> **Note:** Both approaches fetch static HTML and cannot execute JavaScript. SPAs or pages that load content dynamically may not work well.
+| JS Support | Full (SPAs / Dynamic) | Static Only (SSG) |
 
 ## Usage
 
@@ -135,7 +134,7 @@ The available models are fetched dynamically from the Cloudflare Workers AI API:
 
 ### Chat Flow
 1. User enters a URL and starts chatting
-2. Worker fetches the website content and converts HTML to Markdown
+2. Worker fetches the static HTML and converts it to clean Markdown (JavaScript is not executed, so SPAs or dynamically-loaded content won't be captured)
 3. Content is sent to the selected AI model with the user's message
 4. Response is returned to the user
 
