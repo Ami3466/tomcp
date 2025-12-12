@@ -291,7 +291,7 @@ export default {
     }
 
     // Serve static assets from GitHub
-    if (path === 'logo.svg' || path === 'logo.png') {
+    if (path === 'logo.svg' || path === 'logo.png' || path === 'logowhite.svg') {
       const timestamp = Date.now();
       const assetUrl = `https://raw.githubusercontent.com/Ami3466/tomcp/main/${path}?t=${timestamp}`;
       const response = await fetch(assetUrl, { cf: { cacheTtl: 0 } });

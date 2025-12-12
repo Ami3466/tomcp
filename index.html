@@ -4,9 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>toMCP - Turn Any Website into an MCP Server</title>
-  <meta name="description" content="Convert any website URL into an MCP server config. Works with Cursor, Claude, Windsurf, VS Code, and Cline.">
+  <meta name="description" content="Convert any website URL into an MCP server config. Works with Cursor, Claude, Windsurf, VS Code, and Cline. Chat with any website using AI.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/logowhite.svg">
   <link rel="icon" type="image/png" href="/logo.png">
   <link rel="apple-touch-icon" href="/logo.png">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tomcp.org/">
+  <meta property="og:title" content="toMCP - Turn Any Website into an MCP Server">
+  <meta property="og:description" content="Convert any website URL into an MCP server config for AI tools. Chat with any website using AI.">
+  <meta property="og:image" content="https://tomcp.org/logo.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="toMCP - Turn Any Website into an MCP Server">
+  <meta name="twitter:description" content="Convert any website URL into an MCP server config for AI tools. Chat with any website using AI.">
+  <meta name="twitter:image" content="https://tomcp.org/logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwindcss.config = {
@@ -33,21 +51,26 @@
       opacity: 0.15;
     }
     /* Chat scrollbar */
-    #chatMessages::-webkit-scrollbar {
+    #chatMessages::-webkit-scrollbar,
+    #fullscreenMessages::-webkit-scrollbar {
       width: 6px;
     }
-    #chatMessages::-webkit-scrollbar-track {
+    #chatMessages::-webkit-scrollbar-track,
+    #fullscreenMessages::-webkit-scrollbar-track {
       background: transparent;
     }
-    #chatMessages::-webkit-scrollbar-thumb {
+    #chatMessages::-webkit-scrollbar-thumb,
+    #fullscreenMessages::-webkit-scrollbar-thumb {
       background: #374151;
       border-radius: 3px;
     }
-    #chatMessages::-webkit-scrollbar-thumb:hover {
+    #chatMessages::-webkit-scrollbar-thumb:hover,
+    #fullscreenMessages::-webkit-scrollbar-thumb:hover {
       background: #4b5563;
     }
     /* Message animation */
-    #chatMessages > div {
+    #chatMessages > div,
+    #fullscreenMessages > div {
       animation: fadeIn 0.2s ease-out;
     }
     @keyframes fadeIn {
@@ -214,11 +237,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
           </svg>
           <h3 class="text-white font-semibold text-lg">Chat with Website</h3>
-          <span id="chatUrlBadge" class="hidden ml-auto text-xs bg-blue-600/30 text-blue-300 px-2 py-0.5 rounded-full truncate max-w-[150px]"></span>
+          <span id="chatUrlBadge" class="hidden ml-2 text-xs bg-blue-600/30 text-blue-300 px-2 py-0.5 rounded-full truncate max-w-[120px]"></span>
+          <button id="fullscreenBtn" class="ml-auto p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Fullscreen">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+            </svg>
+          </button>
         </div>
 
-        <!-- Chat Messages Area -->
-        <div id="chatMessages" class="flex-1 bg-gray-900/50 border border-gray-700 rounded-lg p-4 overflow-y-auto space-y-4 min-h-[300px]">
+        <!-- Chat Messages Area - Fixed height with scroll -->
+        <div id="chatMessages" class="h-[350px] bg-gray-900/50 border border-gray-700 rounded-lg p-4 overflow-y-auto space-y-4">
           <!-- Empty state shown initially -->
           <div id="chatEmptyState" class="h-full flex flex-col items-center justify-center text-gray-400">
             <svg class="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,38 +284,93 @@
             </button>
           </div>
 
-          <!-- API Key Section (BYOK) -->
-          <details id="apiKeySection" class="mt-3">
-            <summary class="text-gray-400 text-xs cursor-pointer hover:text-gray-300 flex items-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-              </svg>
-              <span id="apiKeyStatus">Use your own API key (bypass limits)</span>
-            </summary>
-            <div class="mt-2 flex gap-2">
-              <input
-                type="password"
-                id="apiKeyInput"
-                placeholder="Enter any API key..."
-                class="flex-1 px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-xs placeholder:text-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all"
-              >
-              <button
-                id="saveApiKeyBtn"
-                class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-xs font-medium transition-colors"
-              >
-                Save
-              </button>
-              <button
-                id="clearApiKeyBtn"
-                class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium transition-colors hidden"
-              >
-                Clear
-              </button>
+          <!-- API Key Section (BYOK) - Hidden until chat starts -->
+          <div id="apiKeySection" class="mt-4 hidden">
+            <div class="bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-lg p-3">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+                <span class="text-green-300 font-medium text-sm">Bypass Rate Limits</span>
+                <span id="apiKeyBadge" class="hidden ml-auto text-xs bg-green-600/50 text-green-200 px-2 py-0.5 rounded-full">Unlimited</span>
+              </div>
+              <p class="text-gray-400 text-xs mb-3">
+                Free tier: 5 messages/day. Add your own Cloudflare Workers AI API token for unlimited usage.
+                <a href="https://developers.cloudflare.com/workers-ai/get-started/rest-api/#1-get-api-token-and-account-id" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Get your free token</a>
+              </p>
+              <div id="apiKeyInputArea" class="flex gap-2">
+                <input
+                  type="password"
+                  id="apiKeyInput"
+                  placeholder="Paste your Cloudflare AI token..."
+                  class="flex-1 px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm placeholder:text-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all"
+                >
+                <button
+                  id="saveApiKeyBtn"
+                  class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+              <div id="apiKeySavedArea" class="hidden flex items-center justify-between">
+                <span class="text-green-400 text-sm flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  API key saved - Unlimited messages!
+                </span>
+                <button
+                  id="clearApiKeyBtn"
+                  class="px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
-          </details>
+          </div>
 
           <p class="text-gray-500 text-xs mt-2 text-center">Powered by Llama 3.1 via Cloudflare Workers AI</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Chat Modal -->
+    <div id="fullscreenModal" class="fixed inset-0 bg-black/95 z-50 hidden flex-col p-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <h2 class="text-white font-semibold text-xl">Chat with Website</h2>
+          <span id="fullscreenUrlBadge" class="ml-2 text-sm bg-blue-600/30 text-blue-300 px-3 py-1 rounded-full"></span>
+        </div>
+        <button id="closeFullscreenBtn" class="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Fullscreen Messages Area -->
+      <div id="fullscreenMessages" class="flex-1 bg-gray-900/50 border border-gray-700 rounded-lg p-4 overflow-y-auto space-y-4 mb-4"></div>
+
+      <!-- Fullscreen Input -->
+      <div class="flex gap-2">
+        <input
+          type="text"
+          id="fullscreenInput"
+          placeholder="Type your message..."
+          class="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-lg"
+        >
+        <button
+          id="fullscreenSendBtn"
+          class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Send
+        </button>
       </div>
     </div>
 
@@ -473,23 +556,40 @@
     const apiKeyInput = document.getElementById('apiKeyInput');
     const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
     const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
-    const apiKeyStatus = document.getElementById('apiKeyStatus');
+    const apiKeySection = document.getElementById('apiKeySection');
+    const apiKeyInputArea = document.getElementById('apiKeyInputArea');
+    const apiKeySavedArea = document.getElementById('apiKeySavedArea');
+    const apiKeyBadge = document.getElementById('apiKeyBadge');
+
+    // Fullscreen elements
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenModal = document.getElementById('fullscreenModal');
+    const closeFullscreenBtn = document.getElementById('closeFullscreenBtn');
+    const fullscreenMessages = document.getElementById('fullscreenMessages');
+    const fullscreenInput = document.getElementById('fullscreenInput');
+    const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
+    const fullscreenUrlBadge = document.getElementById('fullscreenUrlBadge');
+    let isFullscreen = false;
 
     // Update API key UI
     function updateApiKeyUI() {
       if (userApiKey) {
-        apiKeyStatus.innerHTML = '<span class="text-green-400">API key saved (unlimited)</span>';
-        apiKeyInput.value = '••••••••••••';
-        apiKeyInput.disabled = true;
-        saveApiKeyBtn.classList.add('hidden');
-        clearApiKeyBtn.classList.remove('hidden');
+        apiKeyInputArea.classList.add('hidden');
+        apiKeySavedArea.classList.remove('hidden');
+        apiKeySavedArea.classList.add('flex');
+        apiKeyBadge.classList.remove('hidden');
       } else {
-        apiKeyStatus.textContent = 'Use your own API key (bypass limits)';
+        apiKeyInputArea.classList.remove('hidden');
+        apiKeySavedArea.classList.add('hidden');
+        apiKeySavedArea.classList.remove('flex');
+        apiKeyBadge.classList.add('hidden');
         apiKeyInput.value = '';
-        apiKeyInput.disabled = false;
-        saveApiKeyBtn.classList.remove('hidden');
-        clearApiKeyBtn.classList.add('hidden');
       }
+    }
+
+    // Show API key section (called when chat starts)
+    function showApiKeySection() {
+      apiKeySection.classList.remove('hidden');
     }
 
     // Save API key
@@ -673,6 +773,9 @@
       chatSendBtn.disabled = false;
       chatInput.placeholder = `Ask about ${chatWebsiteUrl}...`;
 
+      // Show API key section after chat starts
+      showApiKeySection();
+
       // Add welcome message
       addMessage('assistant', `Ready to answer questions about **${chatWebsiteUrl}**! What would you like to know?`);
       chatInput.focus();
@@ -698,6 +801,74 @@
         e.preventDefault();
         sendMessage(chatInput.value);
         chatInput.value = '';
+      }
+    });
+
+    // ========== FULLSCREEN FUNCTIONALITY ==========
+    function openFullscreen() {
+      if (!chatStarted) return;
+      isFullscreen = true;
+      fullscreenModal.classList.remove('hidden');
+      fullscreenModal.classList.add('flex');
+      fullscreenUrlBadge.textContent = chatWebsiteUrl;
+      document.body.style.overflow = 'hidden';
+
+      // Sync messages to fullscreen view
+      syncMessagesToFullscreen();
+      fullscreenInput.focus();
+    }
+
+    function closeFullscreen() {
+      isFullscreen = false;
+      fullscreenModal.classList.add('hidden');
+      fullscreenModal.classList.remove('flex');
+      document.body.style.overflow = '';
+
+      // Sync messages back
+      syncMessagesToMain();
+    }
+
+    function syncMessagesToFullscreen() {
+      fullscreenMessages.innerHTML = chatMessages.innerHTML;
+      fullscreenMessages.scrollTop = fullscreenMessages.scrollHeight;
+    }
+
+    function syncMessagesToMain() {
+      // Messages are already in main view, just scroll
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Add message to both views if fullscreen is open
+    const originalAddMessage = addMessage;
+    addMessage = function(role, content) {
+      originalAddMessage(role, content);
+      if (isFullscreen) {
+        syncMessagesToFullscreen();
+      }
+    };
+
+    // Fullscreen button handler
+    fullscreenBtn.addEventListener('click', openFullscreen);
+    closeFullscreenBtn.addEventListener('click', closeFullscreen);
+
+    // Fullscreen input handlers
+    fullscreenSendBtn.addEventListener('click', () => {
+      sendMessage(fullscreenInput.value);
+      fullscreenInput.value = '';
+    });
+
+    fullscreenInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage(fullscreenInput.value);
+        fullscreenInput.value = '';
+      }
+    });
+
+    // Close fullscreen on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        closeFullscreen();
       }
     });
   </script>
