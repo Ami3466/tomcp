@@ -32,6 +32,28 @@
       filter: blur(150px);
       opacity: 0.15;
     }
+    /* Chat scrollbar */
+    #chatMessages::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chatMessages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #chatMessages::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+    }
+    #chatMessages::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+    /* Message animation */
+    #chatMessages > div {
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body class="min-h-screen text-white antialiased">
@@ -41,7 +63,7 @@
     <div class="absolute top-60 right-1/4 w-[400px] h-[400px] bg-purple-500 rounded-full blur-effect"></div>
   </div>
 
-  <div class="relative max-w-4xl mx-auto px-4 pt-2 pb-16">
+  <div class="relative max-w-6xl mx-auto px-4 pt-2 pb-16">
     <!-- Header -->
     <header class="text-center mb-12">
       <!-- Big Logo + Title (no gap) -->
@@ -103,91 +125,170 @@
       </div>
     </header>
 
-    <!-- Main Tool -->
-    <main id="mcpSection" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 backdrop-blur-sm mb-8">
-      <!-- AI Tools Tabs -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-white mb-3">Select your AI tool</label>
-        <div id="toolsGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <!-- Tools will be inserted here -->
-        </div>
-      </div>
-
-      <!-- Output Section -->
-      <div id="outputSection" class="hidden space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <label class="block text-sm font-medium text-white">MCP Config for <span id="toolName">Cursor</span></label>
-            <p id="configPath" class="text-gray-500 text-xs font-mono mt-1">~/.cursor/mcp.json</p>
-          </div>
-          <button
-            id="copyBtn"
-            class="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
-          >
-            <svg id="copyIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/>
-            </svg>
-            <span id="copyText">Copy</span>
-          </button>
-        </div>
-
-        <pre id="codeBlock" class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 overflow-x-auto">
-          <code class="text-sm text-green-400"></code>
-        </pre>
-
-        <!-- How to Use -->
-        <div class="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
-          <h3 class="text-white font-medium mb-3 flex items-center gap-2">
-            <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            How to use
-          </h3>
-          <ol class="text-gray-400 text-sm space-y-2 list-decimal list-inside">
-            <li>Copy the config above</li>
-            <li>Open <code id="stepConfigPath" class="text-gray-300 bg-gray-800 px-1.5 py-0.5 rounded">~/.cursor/mcp.json</code></li>
-            <li>Add or merge the config into your existing mcpServers</li>
-            <li>Restart <span id="stepToolName">Cursor</span></li>
-            <li>Ask your AI to fetch content from <span id="stepDomain">docs.stripe.com</span>!</li>
-          </ol>
-        </div>
-
-        <!-- Test Link -->
-        <a
-          id="testLink"
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+    <!-- Side by Side: MCP Config + Chat -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Left: MCP Config -->
+      <main id="mcpSection" class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
           </svg>
-          Test MCP endpoint
-        </a>
-      </div>
+          <h3 class="text-white font-semibold text-lg">MCP Config</h3>
+        </div>
 
-      <!-- Empty State -->
-      <div id="emptyState" class="text-center py-8 text-gray-500">
-        <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke-width="2"/>
-          <path stroke-width="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-        <p>Enter a website URL to generate MCP config</p>
-      </div>
-    </main>
+        <!-- AI Tools Tabs -->
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-gray-400 mb-2">Select your AI tool</label>
+          <div id="toolsGrid" class="grid grid-cols-5 gap-2">
+            <!-- Tools will be inserted here -->
+          </div>
+        </div>
 
-    <!-- Chat Coming Soon -->
-    <div class="bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20 border border-blue-500/30 rounded-xl p-6 mb-8 text-center">
-      <div class="flex items-center justify-center gap-2 mb-2">
-        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-        </svg>
-        <span class="text-sm font-medium text-blue-400">Coming Soon</span>
+        <!-- Output Section -->
+        <div id="outputSection" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block text-sm font-medium text-white">Config for <span id="toolName">Cursor</span></label>
+              <p id="configPath" class="text-gray-500 text-xs font-mono">~/.cursor/mcp.json</p>
+            </div>
+            <button
+              id="copyBtn"
+              class="flex items-center gap-2 px-3 py-1.5 bg-white text-black hover:bg-gray-100 rounded-lg text-xs font-medium transition-colors"
+            >
+              <svg id="copyIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/>
+              </svg>
+              <span id="copyText">Copy</span>
+            </button>
+          </div>
+
+          <pre id="codeBlock" class="bg-gray-900/50 border border-gray-800 rounded-lg p-3 overflow-x-auto text-xs">
+            <code class="text-green-400"></code>
+          </pre>
+
+          <!-- How to Use (collapsed) -->
+          <details class="bg-gray-800/30 border border-gray-700 rounded-lg">
+            <summary class="text-white font-medium p-3 cursor-pointer flex items-center gap-2 text-sm">
+              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              How to use
+            </summary>
+            <ol class="text-gray-400 text-xs space-y-1.5 list-decimal list-inside px-3 pb-3">
+              <li>Copy the config above</li>
+              <li>Open <code id="stepConfigPath" class="text-gray-300 bg-gray-800 px-1 py-0.5 rounded text-xs">~/.cursor/mcp.json</code></li>
+              <li>Add or merge into your mcpServers</li>
+              <li>Restart <span id="stepToolName">Cursor</span></li>
+            </ol>
+          </details>
+
+          <a
+            id="testLink"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            Test MCP endpoint
+          </a>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-12 text-gray-500">
+          <svg class="w-10 h-10 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <path stroke-width="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <p class="text-sm">Paste a URL above to generate config</p>
+        </div>
+      </main>
+
+      <!-- Right: Chat -->
+      <div id="chatSection" class="bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20 border border-blue-500/30 rounded-xl p-5 flex flex-col">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <h3 class="text-white font-semibold text-lg">Chat with Website</h3>
+          <span id="chatUrlBadge" class="hidden ml-auto text-xs bg-blue-600/30 text-blue-300 px-2 py-0.5 rounded-full truncate max-w-[150px]"></span>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="chatMessages" class="flex-1 bg-gray-900/50 border border-gray-700 rounded-lg p-4 overflow-y-auto space-y-4 min-h-[300px]">
+          <!-- Empty state shown initially -->
+          <div id="chatEmptyState" class="h-full flex flex-col items-center justify-center text-gray-400">
+            <svg class="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p class="text-sm text-center mb-4">Paste a URL above to start chatting<br><span class="text-xs text-gray-500">Ask questions about any website's content</span></p>
+            <button
+              id="startChatBtn"
+              disabled
+              class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Start Chat
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div id="chatInputArea" class="mt-4">
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Paste a URL above first..."
+              disabled
+              class="flex-1 px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+            <button
+              id="chatSendBtn"
+              disabled
+              class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- API Key Section (BYOK) -->
+          <details id="apiKeySection" class="mt-3">
+            <summary class="text-gray-400 text-xs cursor-pointer hover:text-gray-300 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              <span id="apiKeyStatus">Use your own API key (bypass limits)</span>
+            </summary>
+            <div class="mt-2 flex gap-2">
+              <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="Enter any API key..."
+                class="flex-1 px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-xs placeholder:text-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all"
+              >
+              <button
+                id="saveApiKeyBtn"
+                class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-xs font-medium transition-colors"
+              >
+                Save
+              </button>
+              <button
+                id="clearApiKeyBtn"
+                class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium transition-colors hidden"
+              >
+                Clear
+              </button>
+            </div>
+          </details>
+
+          <p class="text-gray-500 text-xs mt-2 text-center">Powered by Llama 3.1 via Cloudflare Workers AI</p>
+        </div>
       </div>
-      <h3 class="text-white font-semibold text-lg mb-1">Chat with Any Website</h3>
-      <p class="text-gray-400 text-sm">Ask questions directly about any website's content - no config needed.</p>
     </div>
 
     <!-- Features -->
@@ -313,7 +414,6 @@
         document.getElementById('configPath').textContent = selectedTool.configPath;
         document.getElementById('stepConfigPath').textContent = selectedTool.configPath;
         document.getElementById('stepToolName').textContent = selectedTool.name;
-        document.getElementById('stepDomain').textContent = domain;
         document.querySelector('#codeBlock code').textContent = generateConfig(fullPath);
         document.getElementById('testLink').href = `${MCP_BASE_URL}/${fullPath}`;
       } else {
@@ -343,13 +443,263 @@
     document.getElementById('tryExample').addEventListener('click', () => {
       document.getElementById('urlInput').value = 'flowengine.cloud';
       updateOutput();
+      // Also update chat URL (since programmatic value change doesn't trigger input event)
+      // Note: updateChatUrl is defined later but this runs after page load
+      setTimeout(() => updateChatUrl('flowengine.cloud'), 0);
     });
 
-    // URL input handler
+    // URL input handler (MCP only - chat handler added after enableChat is defined)
     document.getElementById('urlInput').addEventListener('input', updateOutput);
 
     // Initialize
     renderTools();
+
+    // ========== CHAT FUNCTIONALITY ==========
+    // Use localhost for local dev, production URL otherwise
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const CHAT_API_URL = isLocalDev ? 'http://localhost:8787/chat' : 'https://tomcp.org/chat';
+    let chatHistory = [];
+    let chatWebsiteUrl = '';
+    let isLoading = false;
+    let chatStarted = false;
+    let userApiKey = localStorage.getItem('tomcp_api_key') || '';
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatEmptyState = document.getElementById('chatEmptyState');
+    const chatUrlBadge = document.getElementById('chatUrlBadge');
+    const startChatBtn = document.getElementById('startChatBtn');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+    const apiKeyStatus = document.getElementById('apiKeyStatus');
+
+    // Update API key UI
+    function updateApiKeyUI() {
+      if (userApiKey) {
+        apiKeyStatus.innerHTML = '<span class="text-green-400">API key saved (unlimited)</span>';
+        apiKeyInput.value = '••••••••••••';
+        apiKeyInput.disabled = true;
+        saveApiKeyBtn.classList.add('hidden');
+        clearApiKeyBtn.classList.remove('hidden');
+      } else {
+        apiKeyStatus.textContent = 'Use your own API key (bypass limits)';
+        apiKeyInput.value = '';
+        apiKeyInput.disabled = false;
+        saveApiKeyBtn.classList.remove('hidden');
+        clearApiKeyBtn.classList.add('hidden');
+      }
+    }
+
+    // Save API key
+    saveApiKeyBtn.addEventListener('click', () => {
+      const key = apiKeyInput.value.trim();
+      if (key && key.length > 10) {
+        userApiKey = key;
+        localStorage.setItem('tomcp_api_key', key);
+        updateApiKeyUI();
+      }
+    });
+
+    // Clear API key
+    clearApiKeyBtn.addEventListener('click', () => {
+      userApiKey = '';
+      localStorage.removeItem('tomcp_api_key');
+      updateApiKeyUI();
+    });
+
+    // Initialize API key UI
+    updateApiKeyUI();
+
+    // Add message to chat
+    function addMessage(role, content) {
+      // Remove empty state if present
+      if (chatEmptyState) chatEmptyState.remove();
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = role === 'user'
+        ? 'flex justify-end'
+        : 'flex justify-start';
+
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md bg-blue-600 text-white text-sm'
+        : 'max-w-[85%] px-4 py-2.5 rounded-2xl rounded-bl-md bg-gray-700 text-gray-100 text-sm';
+
+      // Simple markdown-like formatting for AI responses
+      if (role === 'assistant') {
+        content = content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded text-xs">$1</code>')
+          .replace(/\n/g, '<br>');
+        bubble.innerHTML = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      messageDiv.appendChild(bubble);
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Add loading indicator
+    function addLoadingIndicator() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'chatLoading';
+      loadingDiv.className = 'flex justify-start';
+      loadingDiv.innerHTML = `
+        <div class="px-4 py-2.5 rounded-2xl rounded-bl-md bg-gray-700 text-gray-400 flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Thinking...
+        </div>
+      `;
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Remove loading indicator
+    function removeLoadingIndicator() {
+      const loading = document.getElementById('chatLoading');
+      if (loading) loading.remove();
+    }
+
+    // Send message to API
+    async function sendMessage(message) {
+      if (isLoading || !message.trim() || !chatWebsiteUrl) return;
+
+      isLoading = true;
+      chatSendBtn.disabled = true;
+      chatInput.disabled = true;
+
+      // Add user message
+      addMessage('user', message);
+      chatHistory.push({ role: 'user', content: message });
+
+      // Show loading
+      addLoadingIndicator();
+
+      try {
+        const requestBody = {
+          url: chatWebsiteUrl,
+          message: message,
+          history: chatHistory.slice(-6) // Keep last 6 for context
+        };
+
+        // Include API key if available (bypasses rate limits)
+        if (userApiKey) {
+          requestBody.apiKey = userApiKey;
+        }
+
+        const response = await fetch(CHAT_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        removeLoadingIndicator();
+
+        if (data.error) {
+          addMessage('assistant', `Error: ${data.error}`);
+        } else {
+          addMessage('assistant', data.response);
+          chatHistory.push({ role: 'assistant', content: data.response });
+        }
+      } catch (error) {
+        removeLoadingIndicator();
+        addMessage('assistant', `Failed to get response. Please try again. (${error.message})`);
+      }
+
+      isLoading = false;
+      chatSendBtn.disabled = false;
+      chatInput.disabled = false;
+      chatInput.focus();
+    }
+
+    // Enable Start Chat button when URL is entered
+    function updateChatUrl(url) {
+      if (!url) {
+        chatWebsiteUrl = '';
+        startChatBtn.disabled = true;
+        chatInput.disabled = true;
+        chatSendBtn.disabled = true;
+        chatInput.placeholder = 'Paste a URL above first...';
+        chatUrlBadge.classList.add('hidden');
+        return;
+      }
+
+      // Update URL and enable start button
+      chatWebsiteUrl = url;
+      startChatBtn.disabled = false;
+      chatUrlBadge.textContent = url;
+      chatUrlBadge.classList.remove('hidden');
+
+      // If chat already started with different URL, reset
+      if (chatStarted) {
+        chatStarted = false;
+        chatHistory = [];
+        chatMessages.innerHTML = '';
+        if (chatEmptyState) {
+          chatEmptyState.style.display = 'flex';
+          chatMessages.appendChild(chatEmptyState);
+        }
+        chatInput.disabled = true;
+        chatSendBtn.disabled = true;
+        chatInput.placeholder = 'Paste a URL above first...';
+      }
+    }
+
+    // Start chat session
+    function startChat() {
+      if (!chatWebsiteUrl) return;
+
+      chatStarted = true;
+      chatHistory = [];
+
+      // Remove empty state
+      if (chatEmptyState) chatEmptyState.style.display = 'none';
+
+      // Enable input
+      chatInput.disabled = false;
+      chatSendBtn.disabled = false;
+      chatInput.placeholder = `Ask about ${chatWebsiteUrl}...`;
+
+      // Add welcome message
+      addMessage('assistant', `Ready to answer questions about **${chatWebsiteUrl}**! What would you like to know?`);
+      chatInput.focus();
+    }
+
+    // Connect to main URL input
+    document.getElementById('urlInput').addEventListener('input', (e) => {
+      const { fullPath } = cleanUrl(e.target.value);
+      updateChatUrl(fullPath);
+    });
+
+    // Start Chat button handler
+    startChatBtn.addEventListener('click', startChat);
+
+    // Chat send handlers
+    chatSendBtn.addEventListener('click', () => {
+      sendMessage(chatInput.value);
+      chatInput.value = '';
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage(chatInput.value);
+        chatInput.value = '';
+      }
+    });
   </script>
 </body>
 </html>

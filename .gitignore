@@ -13,3 +13,15 @@
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Cloudflare Workers
+.wrangler/
+.dev.vars
+
+# Build
+dist/
+*.tsbuildinfo
