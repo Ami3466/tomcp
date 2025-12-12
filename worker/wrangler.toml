@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 account_id = "ec62a93ac5823c4621864bda8abb2be4"  # Ami3466@gmail.com
 
+# Environment variables
+[vars]
+CF_ACCOUNT_ID = "ec62a93ac5823c4621864bda8abb2be4"
+
 # Workers AI - free tier, no API key needed
 [ai]
 binding = "AI"

@@ -8,6 +8,8 @@
 
 export interface Env {
   AI: Ai; // Cloudflare Workers AI binding
+  CF_API_TOKEN?: string; // Optional: for fetching models list
+  CF_ACCOUNT_ID?: string; // Account ID for API calls
 }
 
 // ========== RATE LIMITING ==========
@@ -130,12 +132,75 @@ async function fetchWebsiteContent(url: string): Promise<string> {
   }
 }
 
-// Available AI models
-const AI_MODELS: Record<string, { id: string; free: boolean }> = {
-  'llama': { id: '@cf/meta/llama-3.1-8b-instruct', free: true },
-  'qwen': { id: '@cf/qwen/qwen1.5-14b-chat-awq', free: true },
-  'mistral': { id: '@cf/mistral/mistral-7b-instruct-v0.1', free: true },
-};
+// Cache for dynamic models (5 min TTL)
+let modelsCache: { models: any[]; timestamp: number } | null = null;
+const MODELS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Fetch models dynamically from Cloudflare API
+async function fetchCloudflareModels(accountId: string, apiToken?: string): Promise<any[]> {
+  // Return cached if fresh
+  if (modelsCache && Date.now() - modelsCache.timestamp < MODELS_CACHE_TTL) {
+    return modelsCache.models;
+  }
+
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (apiToken) {
+      headers['Authorization'] = `Bearer ${apiToken}`;
+    }
+
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/models/search?task=Text%20Generation`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json() as { result: any[] };
+
+    // Filter and format models for chat
+    const models = (data.result || [])
+      .filter((m: any) => m.task?.name === 'Text Generation' && !m.name.includes('embedding'))
+      .map((m: any) => ({
+        id: m.name, // e.g. "@cf/meta/llama-3.1-8b-instruct"
+        name: m.description || m.name.split('/').pop()?.replace(/-/g, ' ') || m.name,
+        provider: m.name.split('/')[1] || 'Unknown',
+        free: m.properties?.some((p: any) => p.property_id === 'beta') || false,
+      }))
+      .sort((a: any, b: any) => {
+        // Free models first, then alphabetically
+        if (a.free !== b.free) return a.free ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+
+    modelsCache = { models, timestamp: Date.now() };
+    return models;
+  } catch (error) {
+    console.error('Failed to fetch models:', error);
+    // Fallback: free models first, then paid
+    return [
+      // Free models (Beta) - Llama 3.1 8B is default
+      { id: '@cf/meta/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', provider: 'Meta', free: true },
+      { id: '@hf/nousresearch/hermes-2-pro-mistral-7b', name: 'Hermes 2 Pro', provider: 'NousResearch', free: true },
+      { id: '@cf/mistral/mistral-7b-instruct-v0.1', name: 'Mistral 7B', provider: 'Mistral', free: true },
+      { id: '@cf/google/gemma-7b-it-lora', name: 'Gemma 7B LoRA', provider: 'Google', free: true },
+      // Paid models (GA - require API key)
+      { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', name: 'Llama 3.3 70B', provider: 'Meta', free: false },
+      { id: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b', name: 'DeepSeek R1 32B', provider: 'DeepSeek', free: false },
+      { id: '@cf/mistral/mistral-large-2407', name: 'Mistral Large', provider: 'Mistral', free: false },
+      { id: '@cf/google/gemma-3-12b-it', name: 'Gemma 3 12B', provider: 'Google', free: false },
+      { id: '@cf/openai/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'OpenAI', free: false },
+      { id: '@cf/openai/gpt-oss-20b', name: 'GPT OSS 20B', provider: 'OpenAI', free: false },
+    ];
+  }
+}
+
+// Default model ID
+const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 
 // Chat with Cloudflare Workers AI (free, no API key needed)
 // Includes retry logic for transient failures
@@ -145,7 +210,7 @@ async function chatWithAI(
   websiteContent: string,
   userMessage: string,
   chatHistory: Array<{ role: string; content: string }>,
-  modelKey: string = 'llama'
+  modelId: string = DEFAULT_MODEL
 ): Promise<string> {
   const systemPrompt = `You are a helpful assistant that answers questions about the website ${websiteUrl}.
 You have access to the website's content below. Answer questions based on this content.
@@ -160,8 +225,8 @@ ${websiteContent}`;
     { role: 'user', content: userMessage },
   ];
 
-  // Get model ID (default to llama if invalid)
-  const model = AI_MODELS[modelKey] || AI_MODELS['llama'];
+  // Use provided model ID or default
+  const model = modelId.startsWith('@') ? modelId : DEFAULT_MODEL;
 
   // Retry logic for transient AI failures
   const MAX_RETRIES = 3;
@@ -169,7 +234,7 @@ ${websiteContent}`;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await ai.run(model.id as Parameters<typeof ai.run>[0], {
+      const response = await ai.run(model as Parameters<typeof ai.run>[0], {
         messages,
         max_tokens: 1024,
       });
@@ -230,6 +295,14 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // ========== MODELS API ==========
+    if (path === 'models') {
+      const accountId = env.CF_ACCOUNT_ID || 'ec62a93ac5823c4621864bda8abb2be4';
+      const models = await fetchCloudflareModels(accountId, env.CF_API_TOKEN);
+      // Return all models (frontend will disable paid ones)
+      return Response.json(models, { headers: corsHeaders });
+    }
+
     // ========== CHAT API ==========
     if (path === 'chat' && request.method === 'POST') {
       try {
@@ -238,10 +311,10 @@ export default {
           message: string;
           history?: Array<{ role: string; content: string }>;
           apiKey?: string; // Optional: user's own API key to bypass rate limits
-          model?: string; // Optional: model to use (default: llama)
+          model?: string; // Optional: model ID to use (e.g. "@cf/microsoft/phi-2")
         };
 
-        const { apiKey, model = 'llama' } = body;
+        const { apiKey, model = DEFAULT_MODEL } = body;
         const hasApiKey = !!apiKey && apiKey.length > 10;
 
         // Only check rate limit if no API key provided
