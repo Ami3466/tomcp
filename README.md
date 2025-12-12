@@ -23,6 +23,8 @@ AI assistants hallucinate API details when they lack documentation. MCP Resource
 | Persistence | Per-request | Always available |
 | Hallucination | Higher | Lower |
 
+> **Note:** Both approaches fetch static HTML and cannot execute JavaScript. SPAs or pages that load content dynamically may not work well.
+
 ## Usage
 
 ### MCP Server

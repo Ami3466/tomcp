@@ -568,20 +568,28 @@
     let userApiKey = localStorage.getItem('tomcp_api_key') || '';
     let selectedModel = localStorage.getItem('tomcp_model') || '@cf/meta/llama-3.1-8b-instruct';
 
-    // Available AI models (fetched from API)
-    let AI_MODELS = [];
+    // Available AI models - fallback if API fails
+    let AI_MODELS = [
+      { id: '@cf/meta/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', provider: 'Meta', free: true },
+      { id: '@cf/qwen/qwen1.5-14b-chat-awq', name: 'Qwen 1.5 14B', provider: 'Alibaba', free: true },
+      { id: '@cf/mistral/mistral-7b-instruct-v0.2-lora', name: 'Mistral 7B', provider: 'Mistral', free: true },
+    ];
 
-    // Fetch models from API
+    // Fetch models from API (updates the fallback list)
     async function fetchModels() {
       try {
         const response = await fetch(MODELS_API_URL);
         if (response.ok) {
-          AI_MODELS = await response.json();
-          renderModels();
+          const models = await response.json();
+          if (models && models.length > 0) {
+            AI_MODELS = models;
+          }
         }
       } catch (error) {
         console.error('Failed to fetch models:', error);
       }
+      // Always render models (either from API or fallback)
+      renderModels();
     }
 
     const chatMessages = document.getElementById('chatMessages');
@@ -680,7 +688,8 @@
       });
     }
 
-    // Initialize model selector (fetch from API)
+    // Initialize model selector - render fallbacks immediately, then fetch from API
+    renderModels();
     fetchModels();
 
     // Add message to chat
