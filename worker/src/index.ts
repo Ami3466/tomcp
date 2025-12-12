@@ -130,6 +130,13 @@ async function fetchWebsiteContent(url: string): Promise<string> {
   }
 }
 
+// Available AI models
+const AI_MODELS: Record<string, { id: string; free: boolean }> = {
+  'llama': { id: '@cf/meta/llama-3.1-8b-instruct', free: true },
+  'qwen': { id: '@cf/qwen/qwen1.5-14b-chat-awq', free: true },
+  'mistral': { id: '@cf/mistral/mistral-7b-instruct-v0.1', free: true },
+};
+
 // Chat with Cloudflare Workers AI (free, no API key needed)
 // Includes retry logic for transient failures
 async function chatWithAI(
@@ -137,7 +144,8 @@ async function chatWithAI(
   websiteUrl: string,
   websiteContent: string,
   userMessage: string,
-  chatHistory: Array<{ role: string; content: string }>
+  chatHistory: Array<{ role: string; content: string }>,
+  modelKey: string = 'llama'
 ): Promise<string> {
   const systemPrompt = `You are a helpful assistant that answers questions about the website ${websiteUrl}.
 You have access to the website's content below. Answer questions based on this content.
@@ -152,13 +160,16 @@ ${websiteContent}`;
     { role: 'user', content: userMessage },
   ];
 
+  // Get model ID (default to llama if invalid)
+  const model = AI_MODELS[modelKey] || AI_MODELS['llama'];
+
   // Retry logic for transient AI failures
   const MAX_RETRIES = 3;
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+      const response = await ai.run(model.id as Parameters<typeof ai.run>[0], {
         messages,
         max_tokens: 1024,
       });
@@ -227,9 +238,10 @@ export default {
           message: string;
           history?: Array<{ role: string; content: string }>;
           apiKey?: string; // Optional: user's own API key to bypass rate limits
+          model?: string; // Optional: model to use (default: llama)
         };
 
-        const { apiKey } = body;
+        const { apiKey, model = 'llama' } = body;
         const hasApiKey = !!apiKey && apiKey.length > 10;
 
         // Only check rate limit if no API key provided
@@ -282,7 +294,8 @@ export default {
           fullUrl,
           content,
           message,
-          history
+          history,
+          model
         );
 
         return Response.json(
