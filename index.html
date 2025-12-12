@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>toMCP - Turn Any Website into an MCP Server</title>
+  <meta name="description" content="Convert any website URL into an MCP server config. Works with Cursor, Claude, Windsurf, VS Code, and Cline.">
+  <link rel="icon" type="image/png" href="logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            gray: {
+              900: '#111111',
+              800: '#1a1a1a',
+              700: '#2a2a2a',
+              600: '#3a3a3a',
+              500: '#6b7280',
+              400: '#9ca3af',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #000; }
+    .blur-effect {
+      filter: blur(150px);
+      opacity: 0.15;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-white antialiased">
+  <!-- Background Effects -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 left-1/4 w-[500px] h-[500px] bg-blue-500 rounded-full blur-effect"></div>
+    <div class="absolute top-60 right-1/4 w-[400px] h-[400px] bg-purple-500 rounded-full blur-effect"></div>
+  </div>
+
+  <div class="relative max-w-4xl mx-auto px-4 py-16">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <!-- Logo -->
+      <div class="flex justify-center mb-6">
+        <img src="logo.svg" alt="toMCP Logo" class="w-24 h-24 sm:w-28 sm:h-28">
+      </div>
+      <h1 class="text-6xl sm:text-7xl font-bold text-white tracking-tight mb-4">toMCP</h1>
+      <p class="text-xl sm:text-2xl text-gray-300 mb-8">
+        Convert any website or docs into an MCP server
+      </p>
+
+      <!-- 3 Examples -->
+      <div class="flex flex-col items-center gap-2 text-sm mb-6 font-mono">
+        <span class="text-gray-400">tomcp.org/<span class="text-blue-400">https://example.com</span></span>
+        <span class="text-gray-400">tomcp.org/<span class="text-blue-400">example.com</span></span>
+        <span class="text-gray-400">tomcp.org/<span class="text-blue-400">docs.example.com</span></span>
+      </div>
+
+      <p class="text-gray-500 text-sm mb-6">paste the url here</p>
+
+      <!-- URL Input -->
+      <div class="max-w-lg mx-auto mb-6">
+        <div class="relative">
+          <input
+            type="text"
+            id="urlInput"
+            placeholder="example.com"
+            class="w-full px-4 py-3 pr-32 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:border-white focus:outline-none transition-all text-center"
+          >
+          <button
+            id="tryExample"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+          >
+            Try Example
+          </button>
+        </div>
+      </div>
+
+      <!-- To MCP / To Chat Tabs -->
+      <div class="flex items-center justify-center gap-4 mb-8">
+        <button id="tabMcp" class="px-4 py-2 text-white font-medium border-b-2 border-white">To MCP</button>
+        <button id="tabChat" class="px-4 py-2 text-gray-500 font-medium border-b-2 border-transparent hover:text-gray-300">To Chat <span class="text-xs text-gray-600">(soon)</span></button>
+      </div>
+    </header>
+
+    <!-- Main Tool -->
+    <main id="mcpSection" class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 backdrop-blur-sm mb-8">
+      <!-- AI Tools Tabs -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-white mb-3">Select your AI tool</label>
+        <div id="toolsGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <!-- Tools will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Output Section -->
+      <div id="outputSection" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="block text-sm font-medium text-white">MCP Config for <span id="toolName">Cursor</span></label>
+            <p id="configPath" class="text-gray-500 text-xs font-mono mt-1">~/.cursor/mcp.json</p>
+          </div>
+          <button
+            id="copyBtn"
+            class="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
+          >
+            <svg id="copyIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/>
+            </svg>
+            <span id="copyText">Copy</span>
+          </button>
+        </div>
+
+        <pre id="codeBlock" class="bg-gray-900/50 border border-gray-800 rounded-lg p-4 overflow-x-auto">
+          <code class="text-sm text-green-400"></code>
+        </pre>
+
+        <!-- How to Use -->
+        <div class="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+          <h3 class="text-white font-medium mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            How to use
+          </h3>
+          <ol class="text-gray-400 text-sm space-y-2 list-decimal list-inside">
+            <li>Copy the config above</li>
+            <li>Open <code id="stepConfigPath" class="text-gray-300 bg-gray-800 px-1.5 py-0.5 rounded">~/.cursor/mcp.json</code></li>
+            <li>Add or merge the config into your existing mcpServers</li>
+            <li>Restart <span id="stepToolName">Cursor</span></li>
+            <li>Ask your AI to fetch content from <span id="stepDomain">docs.stripe.com</span>!</li>
+          </ol>
+        </div>
+
+        <!-- Test Link -->
+        <a
+          id="testLink"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+          Test MCP endpoint
+        </a>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="text-center py-8 text-gray-500">
+        <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <path stroke-width="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <p>Enter a website URL to generate MCP config</p>
+      </div>
+    </main>
+
+    <!-- Chat Coming Soon -->
+    <div class="bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20 border border-blue-500/30 rounded-xl p-6 mb-8 text-center">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span class="text-sm font-medium text-blue-400">Coming Soon</span>
+      </div>
+      <h3 class="text-white font-semibold text-lg mb-1">Chat with Any Website</h3>
+      <p class="text-gray-400 text-sm">Ask questions directly about any website's content - no config needed.</p>
+    </div>
+
+    <!-- Features -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+      <div class="bg-gray-900/30 border border-gray-800/50 rounded-lg p-4">
+        <h3 class="text-white font-medium mb-1">Any Website</h3>
+        <p class="text-gray-500 text-sm">Works with any public URL - docs, blogs, APIs</p>
+      </div>
+      <div class="bg-gray-900/30 border border-gray-800/50 rounded-lg p-4">
+        <h3 class="text-white font-medium mb-1">No Setup</h3>
+        <p class="text-gray-500 text-sm">Just paste the config and restart your AI tool</p>
+      </div>
+      <div class="bg-gray-900/30 border border-gray-800/50 rounded-lg p-4">
+        <h3 class="text-white font-medium mb-1">Free Forever</h3>
+        <p class="text-gray-500 text-sm">Powered by Cloudflare Workers - no limits</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-500 text-sm space-y-4">
+      <a href="https://github.com/Ami3466/tomcp" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white text-sm font-medium transition-colors">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <p>
+        <a href="https://github.com/anthropics/mcp" target="_blank" class="text-blue-400 hover:text-blue-300">What is MCP?</a>
+        · Built with
+        <a href="https://flowengine.cloud" target="_blank" class="text-blue-400 hover:text-blue-300">FlowEngine</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    const MCP_BASE_URL = 'https://tomcp.org';
+
+    const AI_TOOLS = [
+      { id: 'cursor', name: 'Cursor', configPath: '~/.cursor/mcp.json', icon: 'https://cursor.sh/apple-touch-icon.png' },
+      { id: 'claude', name: 'Claude', configPath: '~/.claude/claude_desktop_config.json', icon: 'https://www.anthropic.com/images/icons/apple-touch-icon.png' },
+      { id: 'windsurf', name: 'Windsurf', configPath: '~/.codeium/windsurf/mcp_config.json', icon: 'https://codeium.com/favicon.svg' },
+      { id: 'vscode', name: 'VS Code', configPath: '.vscode/mcp.json', icon: 'https://code.visualstudio.com/apple-touch-icon.png' },
+      { id: 'cline', name: 'Cline', configPath: '~/.cline/mcp_settings.json', icon: 'https://cline.bot/assets/branding/favicons/apple-touch-icon.png' },
+    ];
+
+    let selectedTool = AI_TOOLS[0];
+    let currentDomain = '';
+
+    // Render tools grid
+    function renderTools() {
+      const grid = document.getElementById('toolsGrid');
+      grid.innerHTML = AI_TOOLS.map(tool => `
+        <button
+          data-tool-id="${tool.id}"
+          class="tool-btn group relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+            selectedTool.id === tool.id
+              ? 'border-white/40 bg-white/10 scale-[1.02]'
+              : 'border-gray-800 bg-gray-900/30 hover:border-gray-600 hover:bg-gray-800/50'
+          }"
+        >
+          <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden">
+            <img src="${tool.icon}" alt="${tool.name}" class="w-7 h-7 rounded" onerror="this.style.display='none'">
+          </div>
+          <span class="text-xs font-medium truncate w-full text-center transition-colors ${
+            selectedTool.id === tool.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+          }">
+            ${tool.name.split(' ')[0]}
+          </span>
+          ${selectedTool.id === tool.id ? '<div class="absolute -bottom-px left-1/2 -translate-x-1/2 w-6 h-0.5 bg-white rounded-full"></div>' : ''}
+        </button>
+      `).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.tool-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const toolId = btn.dataset.toolId;
+          selectedTool = AI_TOOLS.find(t => t.id === toolId);
+          renderTools();
+          updateOutput();
+        });
+      });
+    }
+
+    // Clean and extract URL parts
+    function cleanUrl(url) {
+      if (!url) return { domain: '', fullPath: '' };
+      // Remove protocol and trailing slash
+      let cleanUrl = url.trim()
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/+$/, '');
+
+      const domain = cleanUrl.split('/')[0];
+      return { domain, fullPath: cleanUrl };
+    }
+
+    // Generate MCP config
+    function generateConfig(fullPath) {
+      const domain = fullPath.split('/')[0];
+      const name = domain.replace(/\./g, '-');
+      return JSON.stringify({
+        mcpServers: {
+          [name]: {
+            url: `${MCP_BASE_URL}/${fullPath}`,
+          },
+        },
+      }, null, 2);
+    }
+
+    // Update output
+    function updateOutput() {
+      const url = document.getElementById('urlInput').value;
+      const { domain, fullPath } = cleanUrl(url);
+      currentDomain = fullPath; // Store full path for config generation
+
+      const outputSection = document.getElementById('outputSection');
+      const emptyState = document.getElementById('emptyState');
+      const tryExampleBtn = document.getElementById('tryExample');
+
+      if (domain) {
+        outputSection.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        tryExampleBtn.classList.add('hidden');
+
+        // Update config display
+        document.getElementById('toolName').textContent = selectedTool.name;
+        document.getElementById('configPath').textContent = selectedTool.configPath;
+        document.getElementById('stepConfigPath').textContent = selectedTool.configPath;
+        document.getElementById('stepToolName').textContent = selectedTool.name;
+        document.getElementById('stepDomain').textContent = domain;
+        document.querySelector('#codeBlock code').textContent = generateConfig(fullPath);
+        document.getElementById('testLink').href = `${MCP_BASE_URL}/${fullPath}`;
+      } else {
+        outputSection.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        tryExampleBtn.classList.remove('hidden');
+      }
+    }
+
+    // Copy functionality
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const config = generateConfig(currentDomain);
+      await navigator.clipboard.writeText(config);
+
+      const copyIcon = document.getElementById('copyIcon');
+      const copyText = document.getElementById('copyText');
+
+      copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+      copyText.textContent = 'Copied!';
+
+      setTimeout(() => {
+        copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"/>';
+        copyText.textContent = 'Copy';
+      }, 2000);
+    });
+
+    // Try example button
+    document.getElementById('tryExample').addEventListener('click', () => {
+      document.getElementById('urlInput').value = 'flowengine.cloud';
+      updateOutput();
+    });
+
+    // URL input handler
+    document.getElementById('urlInput').addEventListener('input', updateOutput);
+
+    // Initialize
+    renderTools();
+  </script>
+</body>
+</html>
