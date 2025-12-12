@@ -560,6 +560,19 @@
     // Initialize
     renderTools();
 
+    // Check for URL parameter on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFromParam = urlParams.get('url');
+    if (urlFromParam) {
+      document.getElementById('urlInput').value = urlFromParam;
+      updateOutput();
+      // Also update chat URL
+      setTimeout(() => {
+        const { fullPath } = cleanUrl(urlFromParam);
+        updateChatUrl(fullPath);
+      }, 0);
+    }
+
     // ========== CHAT FUNCTIONALITY ==========
     // Use localhost for local dev, production URL otherwise
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

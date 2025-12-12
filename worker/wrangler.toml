@@ -7,7 +7,8 @@ account_id = "ec62a93ac5823c4621864bda8abb2be4"  # Ami3466@gmail.com
 [ai]
 binding = "AI"
 
-# Custom domain (already configured in dashboard)
-# routes = [
-#   { pattern = "tomcp.org", custom_domain = true }
-# ]
+# Routes - www redirects to non-www in the worker code
+routes = [
+  { pattern = "tomcp.org/*", zone_name = "tomcp.org" },
+  { pattern = "www.tomcp.org/*", zone_name = "tomcp.org" }
+]
