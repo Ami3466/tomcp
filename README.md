@@ -1,19 +1,12 @@
 # toMCP
 
-**Turn any website into an MCP server + Chat with any website.**
+**Turn any website into an MCP server**
 
 Simply add `tomcp.org/` before any URL:
-
-```
-tomcp.org/docs.stripe.com
-tomcp.org/react.dev
-tomcp.org/your-docs.com/api
-```
 Or go to https://tomcp.org and paste the URL there.
 
 ## Why toMCP?
-
-### Clean Data, Fewer Tokens
+specific APIs often cause AI hallucinations, and web searching is unreliable. This tool lets you serve your documentation as an MCP server, giving the AI direct access to the clear context it needs without manual copy-pasting.
 
 Standard `web_fetch` tools dump raw HTML into your AI's context—navbars, scripts, footers, and noise. toMCP runs pages through a **readability parser** and converts to **clean markdown**, using a fraction of the tokens.
 

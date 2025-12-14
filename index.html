@@ -102,6 +102,60 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
+  /* Mobile-only styles */
+    @media (max-width: 639px) {
+      .mobile-logo {
+        width: 180px !important;
+        height: 180px !important;
+        margin-top: -2rem !important;
+        margin-bottom: -5rem !important;
+      }
+      .mobile-title {
+        font-size: 1.75rem !important;
+      }
+      .mobile-description {
+        font-size: 1.125rem !important;
+        white-space: normal !important;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      .mobile-examples-label {
+        font-size: 1rem !important;
+      }
+      .mobile-examples {
+        font-size: 1rem !important;
+      }
+      .mobile-input-container {
+        flex-direction: column !important;
+      }
+      .mobile-input-container > input {
+        width: 100% !important;
+      }
+      .mobile-input-buttons {
+        display: flex !important;
+        width: 100% !important;
+        gap: 0.5rem;
+      }
+      .mobile-input-buttons > * {
+        flex: 1 !important;
+      }
+      .mobile-tools-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+      .mobile-fullscreen-input-row {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+      }
+      .mobile-fullscreen-input-row > input {
+        width: 100% !important;
+      }
+      .mobile-fullscreen-input-row > select {
+        width: 100% !important;
+      }
+      .mobile-fullscreen-input-row > button {
+        width: 100% !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen text-white antialiased">
@@ -116,17 +170,17 @@
     <header class="text-center mb-6">
       <!-- Big Logo + Title (no gap) -->
       <div class="flex flex-col items-center">
-        <img src="/logo.png" alt="toMCP Logo" class="w-[280px] h-[280px] -mt-12 -mb-28">
-        <h1 class="text-4xl font-semibold text-white tracking-tight mt-2 mb-3">toMCP</h1>
+        <img src="/logo.png" alt="toMCP Logo" class="mobile-logo w-[280px] h-[280px] -mt-12 -mb-28">
+        <h1 class="mobile-title text-4xl font-semibold text-white tracking-tight mt-2 mb-3">toMCP</h1>
       </div>
 
       <!-- Clear explanation -->
-      <p class="text-3xl text-gray-300 mb-6 mx-auto whitespace-nowrap">Convert any website or documentation into an MCP server for your AI tools</p>
+      <p class="mobile-description text-3xl text-gray-300 mb-6 mx-auto whitespace-nowrap">Convert any website or documentation into an MCP server for your AI tools</p>
 
       <!-- Examples -->
       <div class="mb-4">
-        <p class="text-gray-400 text-xl mb-3">add tomcp.org/ before any url</p>
-        <div class="flex flex-col items-center gap-2 text-2xl font-mono">
+        <p class="mobile-examples-label text-gray-400 text-xl mb-3">add tomcp.org/ before any url</p>
+        <div class="mobile-examples flex flex-col items-center gap-2 text-2xl font-mono">
           <span><span class="text-white">tomcp.org/</span><span class="text-blue-400">docs.stripe.com</span></span>
           <span><span class="text-white">tomcp.org/</span><span class="text-blue-400">react.dev</span></span>
           <span><span class="text-white">tomcp.org/</span><span class="text-blue-400">your-docs.com/api</span></span>
@@ -143,30 +197,32 @@
       <!-- URL Input -->
       <div class="max-w-2xl mx-auto">
         <p class="text-gray-400 text-sm mb-3">Paste your URL here:</p>
-        <div class="flex gap-2">
+        <div class="mobile-input-container flex gap-2">
           <input
             type="text"
             id="urlInput"
             placeholder="docs.stripe.com"
             class="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
           >
-          <button
-            id="tryExample"
-            class="px-4 py-3 rounded-lg bg-white hover:bg-gray-100 text-black font-medium transition-colors whitespace-nowrap"
-          >
-            Try Example
-          </button>
-          <a
-            href="https://github.com/Ami3466/tomcp"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-colors flex items-center gap-2"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-            </svg>
-            <span>GitHub</span>
-          </a>
+          <div class="mobile-input-buttons contents">
+            <button
+              id="tryExample"
+              class="px-4 py-3 rounded-lg bg-white hover:bg-gray-100 text-black font-medium transition-colors whitespace-nowrap"
+            >
+              Try Example
+            </button>
+            <a
+              href="https://github.com/Ami3466/tomcp"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-colors flex items-center justify-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+              </svg>
+              <span>GitHub</span>
+            </a>
+          </div>
         </div>
       </div>
     </header>
@@ -185,7 +241,7 @@
         <!-- AI Tools Tabs -->
         <div class="mb-4">
           <label class="block text-xs font-medium text-gray-400 mb-2">Select your AI tool</label>
-          <div id="toolsGrid" class="grid grid-cols-5 gap-2">
+          <div id="toolsGrid" class="mobile-tools-grid grid grid-cols-5 gap-2">
             <!-- Tools will be inserted here -->
           </div>
         </div>
@@ -370,7 +426,7 @@
       <div id="fullscreenMessages" class="flex-1 bg-gray-900/50 border border-gray-700 rounded-lg p-4 overflow-y-auto space-y-4 mb-4"></div>
 
       <!-- Fullscreen Input -->
-      <div class="flex gap-2">
+      <div class="mobile-fullscreen-input-row flex gap-2">
         <select id="fullscreenModelSelect" class="px-3 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
           <!-- Options synced by JS -->
         </select>
@@ -382,7 +438,7 @@
         >
         <button
           id="fullscreenSendBtn"
-          class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors flex items-center gap-2"
+          class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors flex items-center justify-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
