@@ -2,8 +2,15 @@
 
 **Turn any website into an MCP server**
 
-Simply add `tomcp.org/` before any URL:
-Or go to https://tomcp.org and paste the URL there.
+## Quick start
+
+Put `tomcp.org/` in front of any URL:
+
+```
+https://tomcp.org/docs.stripe.com
+```
+
+That address is an MCP server. Add it to your client, or paste the URL at [tomcp.org](https://tomcp.org) instead.
 
 ## Why toMCP?
 specific APIs often cause AI hallucinations, and web searching is unreliable. This tool lets you serve your documentation as an MCP server, giving the AI direct access to the clear context it needs without manual copy-pasting.
