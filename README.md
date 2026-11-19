@@ -87,12 +87,10 @@ These models are available for everyone with no setup:
 - **Llama 3.1 8B** (Meta) - Default model, fast and capable
 - **Hermes 2 Pro** (NousResearch) - Great for reasoning
 - **Mistral 7B** (Mistral) - Efficient instruction-following
-- **Gemma 7B LoRA** (Google) - Lightweight and fast
 
 ### paid Models (API Key Required)
 Add your Cloudflare Workers AI API key to unlock these models:
 - **Llama 3.3 70B** (Meta) - Most powerful Llama model
-- **DeepSeek R1 32B** (DeepSeek) - Advanced reasoning
 - **Mistral Large** (Mistral) - Enterprise-grade
 - **Gemma 3 12B** (Google) - Latest Gemma
 - **GPT OSS 120B/20B** (OpenAI) - Open-source GPT variants
