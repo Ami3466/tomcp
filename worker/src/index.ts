@@ -187,10 +187,8 @@ async function fetchCloudflareModels(accountId: string, apiToken?: string): Prom
       { id: '@cf/meta/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', provider: 'Meta', free: true },
       { id: '@hf/nousresearch/hermes-2-pro-mistral-7b', name: 'Hermes 2 Pro', provider: 'NousResearch', free: true },
       { id: '@cf/mistral/mistral-7b-instruct-v0.1', name: 'Mistral 7B', provider: 'Mistral', free: true },
-      { id: '@cf/google/gemma-7b-it-lora', name: 'Gemma 7B LoRA', provider: 'Google', free: true },
       // Paid models (GA - require API key)
       { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', name: 'Llama 3.3 70B', provider: 'Meta', free: false },
-      { id: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b', name: 'DeepSeek R1 32B', provider: 'DeepSeek', free: false },
       { id: '@cf/mistral/mistral-large-2407', name: 'Mistral Large', provider: 'Mistral', free: false },
       { id: '@cf/google/gemma-3-12b-it', name: 'Gemma 3 12B', provider: 'Google', free: false },
       { id: '@cf/openai/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'OpenAI', free: false },
